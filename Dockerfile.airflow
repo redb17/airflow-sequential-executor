@@ -1,0 +1,19 @@
+FROM ubuntu:latest
+
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+RUN apt-get update -yqq
+RUN apt-get upgrade -yqq
+RUN apt-get install vim -yqq
+RUN apt-get install python3-pip -y
+RUN apt-get install python3-venv -y
+RUN echo 'export TZ=UTC' >> ~/.bashrc
+
+RUN pip install "apache-airflow==2.7.1" --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.7.1/constraints-3.10.txt"
+
+ENV TZ=UTC
+RUN airflow db init
+RUN airflow users create -u af_user -p af_pw -r Admin -e a@f.com -f a -l f
+ENV AIRFLOW__CORE__LOAD_EXAMPLES='false'
+
+RUN echo 'alias start_scheduler="airflow scheduler &> /dev/null &"' >> ~/.bashrc
+RUN echo 'alias start_airflow="exec airflow webserver"' >> ~/.bashrc
